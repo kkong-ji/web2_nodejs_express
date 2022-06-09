@@ -8,7 +8,7 @@
 
 <br>
 
-> ❗그러나,
+> but❗
 
 - nodejs는 서버를 구현함에 있어서 고려해야할 사항이 너무 많음을 인지하게됨.
   <br> (HTTP request, 쿠키 파싱, 세션관리, 라우팅 구성 등)
@@ -24,7 +24,7 @@
   - 접속을 위한 포트나 응답 렌더링을 위한 템플릿 위치같은 공통 웹 어플리케이션 세팅을 한다.
   - 핸들링 파이프라인(reqest handling pipeline) 중 필요한 곳에 추가적인 미들웨어 처리 요청을 추가한다.
  
- > 라우터(router) 기능을 통해 서버와 통신
+> 라우터(router) 기능을 통해 서버와 통신
 
 <br>
 
@@ -37,21 +37,32 @@ app.get('/', function (req, res) {
 ```
 
 ## Middleware (미들웨어)
-> 쉽게 말해, 다른 사람이 만든 소프트웨어
+### 미들 웨어의 예시
 
 <br>
 
-### 미들 웨어의 종류
-1. body-parser
-  #### Installation
-   `npm install body parser`
+### 1. Third-party Middleware
+> Express가 제공하는 것이 아닌 제3자. 즉, 타인이 만든 소프트웨어
 
-  #### API
-  `var bodyParser = require('body-parser')`
-  `app.use(bodyParser.urlencoded({ extended: false}))`
-  
-  #### 사용 예시
-  `기존코드`
+<br>
+
+### ① body-parser
+> HTTP API 통신 (post, put) 시 request body에 들어오는 데이터 값을 읽을 수 있는 구문으로 파싱해줌과
+> <br>
+> 동시에 `req.body` 로 입력해주어 `body` 인자를 쓸 수 있게 해주는 미들웨어
+
+<br>
+
+#### ⚙️ Installation
+`npm install body parser`
+
+#### API
+`var bodyParser = require('body-parser')`
+<br>
+`app.use(bodyParser.urlencoded({ extended: false}))`
+
+#### 사용 예시
+`기존코드`
   ```
     app.post('/create_process', function(request, response) {
       var body = '';
@@ -81,5 +92,115 @@ app.get('/', function (req, res) {
           })
       });
   ```
+
+
+### ② compression 
+
+> 웹 페이지의 데이터 크기가 클 경우, 페이지를 압축하기 위한 미들웨어
+> <br>
+> 데이터를 전송할 때 압축된 데이터가 전송되기 때문에 데이터의 양을 크게 줄일 수 있음.
+<br>
+
+#### ⚙️ Installation
+`npm install compression`
+
+#### API
+`var compression = require('compression')`
+<br>
+`app.use(compression())`
+
+
+<br>
+
+### 2. Application-level Middleware
+> `Get`, `Put`, `Post` 와 같은 요청 메소드를 처리할 수 있는 미들웨어
   
-  
+#### 사용 예시
+
+#### ① 경로가 없는 미들웨어
+```
+var app = express();
+
+app.use(function (req, res, next) {
+  console.log('Time:', Date.now());
+  next();
+});
+```
+
+#### ② 경로가 있는 미들웨어
+```
+app.use('/user/:id', function (req, res, next) {
+  console.log('Request Type:', req.method);
+  next();
+});
+```
+
+#### ③ 경로에 대한 GET 요청 처리 미들웨어
+```
+app.get('/user/:id', function (req, res, next) {
+  res.send('USER');
+});
+```
+
+#### ③ 경로에 대한 연속적인 처리 미들웨어
+```
+app.use('/user/:id', function(req, res, next) {
+  console.log('Request URL:', req.originalUrl);
+  next();
+}, function (req, res, next) {
+  console.log('Request Type:', req.method);
+  next();
+});
+```
+
+<br>
+
+### 3. Built-in Middleware 
+> Express에서 기본으로 제공해주는 미들웨어
+> <br>
+> 정적인 파일을 서비스할 때 주로 사용하는 `static` 함수가 대표적
+
+#### API
+```
+app.use(express.static('public'));
+```
+
+### 3. 오류 처리 미들웨어
+> 오류 발생시 이를 핸들링할 수 있게 해주는 미들웨어
+
+<br>
+
+```
+app.use(function(err, req, res, next) {
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
+});
+```
+
+<br>
+
+> ❗ 오류 처리 미들웨어는 다음과  다른 `app.use()` 및 라우트 호출을 먼저하고 마지막으로 사용해야함.
+
+```
+var bodyParser = require('body-parser');
+var methodOverride = require('method-override');
+
+app.use(bodyParser());
+app.use(methodOverride());
+app.use(function(err, req, res, next) {
+  // logic
+});
+```
+
+<br>
+
+> 오류를 다음 항목으로 전달하고자 할 때
+```
+function clientErrorHandler(err, req, res, next) {
+  if (req.xhr) {
+    res.status(500).send({ error: 'Something failed!' });
+  } else {
+    next(err);
+  }
+}
+```
