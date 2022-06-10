@@ -40,6 +40,43 @@ app.get('/', function (req, res) {
 });
 ```
 
+<br>
+
+## Routing (라우팅)
+> URL 또는 특정한 HTTP 요청 메소드 (GET, POST) 에 대한 클라이언트 요청에 응답하는 방법을 선택하는 것.
+### 라우팅의 예시
+
+<br>
+
+① 홈 페이지(루트)에서 `Hello World!` 로 응답 (Get 방식)
+
+```
+app.get('/', function (req, res) {
+  res.send('Hello World!');
+});
+```
+
+② 홈 페이지(/)에서 POST 요청에 응답
+```
+app.post('/', function (req, res) {
+  res.send('Got a POST request');
+});
+```
+
+③ `/user` 라우트에 대한 PUT 요청에 응답
+```
+app.put('/user', function (req, res) {
+  res.send('Got a PUT request at /user');
+});
+```
+
+④ `/user` 라우트에 대한 DELETE 요청에 응답
+```
+app.delete('/user', function (req, res) {
+  res.send('Got a DELETE request at /user');
+});
+```
+
 ## Middleware (미들웨어)
 ### 미들 웨어의 예시
 
@@ -169,7 +206,7 @@ app.use('/user/:id', function(req, res, next) {
 app.use(express.static('public'));
 ```
 
-### 3. 오류 처리 미들웨어
+### 4. 오류 처리 미들웨어
 > 오류 발생시 이를 핸들링할 수 있게 해주는 미들웨어
 
 <br>
@@ -208,3 +245,16 @@ function clientErrorHandler(err, req, res, next) {
   }
 }
 ```
+
+<br>
+
+## 보안
+> 여러가지 공격으로부터 Express 애플리케이션을 지키기 위한 보안 항목
+
+- 더 이상 사용되지 않거나 취약성이 있는 버전의 Express 사용 중지 -> Express를 자주 업데이트
+- TLS 사용 -> 인터넷 HTTPS, Nginx 와 같은 보안이 적용된 전송 프로토콜을 사용
+- `Helmet` 라이브러리 사용 -> 보안이슈들을 자동으로 해결해주는 미들웨어.
+<br> `npm install --save helmet` 으로 설치.
+- 쿠키를 안전하게 사용
+- dependency(종속항목)이 안전한지 확인
+<br> `npm i nsp -g` -> nsp 모듈을 통해 종속성 보안을 체크하는 것도 좋음
